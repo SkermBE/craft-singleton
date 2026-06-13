@@ -14,6 +14,12 @@
         var el = e.target && e.target.closest ? e.target.closest('[data-singles-manager-url]') : null;
         if (!el) return;
 
+        // Don't hijack clicks inside an element-selector modal (native Link
+        // fields, Hyperlink fields, Entries fields, etc.). There the single
+        // source must behave normally so the entry can be browsed/selected,
+        // rather than redirecting to the single's edit form.
+        if (el.closest('.elementselectormodal')) return;
+
         var url = el.getAttribute('data-singles-manager-url');
         if (!url) return;
 
