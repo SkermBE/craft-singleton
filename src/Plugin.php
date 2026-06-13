@@ -80,17 +80,17 @@ class Plugin extends BasePlugin
                 return;
             }
 
-            // The lone source is redundant, so hide the list and let the page
-            // heading carry the context — EXCEPT for custom sources (and custom
-            // index pages built from them). Their user-defined title only ever
-            // appears in this sidebar, so hiding it leaves the page with no
-            // visible source title at all.
+            // A lone source is only redundant when it's a single section: its
+            // title already shows as the page heading, and there's no list to
+            // browse. Channel/structure sections and custom sources, by
+            // contrast, put their (often page-distinct) title ONLY in this
+            // sidebar — e.g. a "Categories" page whose one source is a
+            // "Service categories" channel — so hiding it would leave the page
+            // with no visible source title. Keep the sidebar for those.
             $soleSource = $nonHeadings[0] ?? null;
-            $isCustomSource = $soleSource !== null && (
-                ($soleSource['type'] ?? '') === 'custom'
-                || str_starts_with($soleSource['key'] ?? '', 'custom:')
-            );
-            if ($isCustomSource) {
+            $isSingle = $soleSource !== null
+                && str_starts_with($soleSource['key'] ?? '', 'single:');
+            if (!$isSingle) {
                 return;
             }
 
