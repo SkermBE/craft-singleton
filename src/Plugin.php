@@ -75,12 +75,28 @@ class Plugin extends BasePlugin
         // Keep #source-actions visible so the Customize Sources button remains accessible.
         Craft::$app->getView()->hook('cp.layouts.elementindex', function (array &$context): void {
             $sources = $context['sources'] ?? [];
-            $nonHeadings = array_filter($sources, fn($s) => ($s['type'] ?? '') !== 'heading');
-            if (count($nonHeadings) <= 1) {
-                Craft::$app->getView()->registerCss(
-                    '#sidebar-container nav { display: none !important; }'
-                );
+            $nonHeadings = array_values(array_filter($sources, fn($s) => ($s['type'] ?? '') !== 'heading'));
+            if (count($nonHeadings) > 1) {
+                return;
             }
+
+            // The lone source is redundant, so hide the list and let the page
+            // heading carry the context — EXCEPT for custom sources (and custom
+            // index pages built from them). Their user-defined title only ever
+            // appears in this sidebar, so hiding it leaves the page with no
+            // visible source title at all.
+            $soleSource = $nonHeadings[0] ?? null;
+            $isCustomSource = $soleSource !== null && (
+                ($soleSource['type'] ?? '') === 'custom'
+                || str_starts_with($soleSource['key'] ?? '', 'custom:')
+            );
+            if ($isCustomSource) {
+                return;
+            }
+
+            Craft::$app->getView()->registerCss(
+                '#sidebar-container nav { display: none !important; }'
+            );
         });
 
         // Inject a "Hide right sidebar" lightswitch into the native section
